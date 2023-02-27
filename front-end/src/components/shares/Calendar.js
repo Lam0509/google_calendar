@@ -9,29 +9,50 @@ import AddEventForm from "./AddEventForm";
 import io from 'socket.io-client'
 import {notifyActions} from "../../features/notify/notifySlice";
 import Snackbar from '@mui/material/Snackbar';
+import EventInfoDialog from "./EventInfoDialog";
+import {EventServices} from "../../services/event.services";
+import {eventActions} from "../../features/event/eventSlice";
 const socket = io.connect('http://localhost:8000')
 
 export default function Calendar() {
+
+    const waitingEvents = useSelector(state => state.notify.waitingEvents)
+
+    const [eventInfo, setEventInfo] = useState('')
     const [openSnackBar, setOpenSnackBar] = useState(false);
     const [snackbar, setSnackbar] = useState({
         severity: "",
         message: ""
     })
 
-    const events = useSelector(state => state.event)
+    let events = useSelector(state => state.event)
+
+    events = events.map(event => {
+        let newEvent = {...event}
+        newEvent.eveDate = newEvent.date
+        return newEvent
+    })
+
+    console.log(waitingEvents)
 
     const dispatch = useDispatch()
 
-    const [open, setOpen] = useState(false)
+    const [openAddEventDialog, setOpenAddEventDialog] = useState(false)
+
+    const [openInfoDialog, setOpenInfoDialog] = useState(false)
 
     const user = useSelector(state => state.auth.currentUser)
 
     const handleClickBtn = () => {
-        setOpen(true)
+        setOpenAddEventDialog(true)
     }
 
-    const handleCloseDialog = () => {
-        setOpen(false)
+    const handleCloseAddEventDialog = () => {
+        setOpenAddEventDialog(false)
+    }
+
+    const handleCloseInfoDialog = () => {
+        setOpenInfoDialog(false)
     }
 
     const handleCloseSnackBar = (event, reason) => {
@@ -46,10 +67,32 @@ export default function Calendar() {
         return (
             <>
                 <b className='me-1'>{eventInfo.timeText}</b>
-                <i>{eventInfo.event.title}</i>
+                <i className='me-3'>{eventInfo.event.title}</i>
             </>
         )
     }
+
+    const handleEventClick = (clickInfo) => {
+        setEventInfo(clickInfo)
+        setOpenInfoDialog(true)
+    }
+
+    useEffect(() => {
+        socket.on('event_deleted', (data) => {
+            const eventIds = events.map(event => {return event.id})
+            if (eventIds.includes(+data.id)) {
+                EventServices.getEventsOfUser(user.id)
+                    .then((res) => {
+                        dispatch(eventActions.getAllEvents(res.data))
+                        setSnackbar({
+                            severity: "success",
+                            message: 'A event has been deleted'
+                        })
+                        setOpenSnackBar(true);
+                    })
+            }
+        })
+    }, [socket])
 
     useEffect(() => {
         socket.on('receive_invitation', (data) => {
@@ -63,6 +106,7 @@ export default function Calendar() {
             }
         })
     }, [socket])
+
 
     return (
         <>
@@ -84,17 +128,30 @@ export default function Calendar() {
                     dayMaxEvents={true}
                     events={events}
                     eventContent={renderEventContent}
+                    eventClick={handleEventClick}
                 />
             </div>
             <div>
                 <Dialog
-                    onClose={handleCloseDialog}
+                    onClose={handleCloseAddEventDialog}
                     aria-labelledby="customized-dialog-title"
-                    open={open}
+                    open={openAddEventDialog}
                     fullWidth='sm'
                 >
                     <DialogContent dividers>
-                        <AddEventForm close={handleCloseDialog}/>
+                        <AddEventForm close={handleCloseAddEventDialog}/>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            <div>
+                <Dialog
+                    onClose={handleCloseInfoDialog}
+                    aria-labelledby="customized-dialog-title"
+                    open={openInfoDialog}
+                    fullWidth='sm'
+                >
+                    <DialogContent dividers>
+                        <EventInfoDialog eveInfo={eventInfo} close={handleCloseInfoDialog}/>
                     </DialogContent>
                 </Dialog>
             </div>

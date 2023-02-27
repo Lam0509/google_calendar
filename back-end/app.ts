@@ -23,6 +23,10 @@ io.on('connection', (socket) => {
     socket.on('send_invitation', (data) => {
         socket.broadcast.emit('receive_invitation', data)
     })
+
+    socket.on('delete_event', (data) => {
+        socket.broadcast.emit('event_deleted', data)
+    })
 });
 
 AppDataSource.initialize()

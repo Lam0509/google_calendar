@@ -17,7 +17,7 @@ export default function NotificationsTable() {
         }
         EventServices.addUserIntoEvent(data)
             .then(() => {
-                EventServices.getEventsOfUser(id)
+                EventServices.getEventsOfUser(user.id)
                     .then((res) => {
                         dispatch(eventActions.getAllEvents(res.data))
                         dispatch(notifyActions.acceptNotify(title))

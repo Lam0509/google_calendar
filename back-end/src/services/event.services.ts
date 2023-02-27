@@ -51,5 +51,10 @@ export class EventServices {
         return await eventRepo.save(event)
     }
 
+    static async deleteEvent(eventId) {
+        let event = await eventRepo.findOneBy({id: eventId})
+        await eventRepo.remove(event)
+    }
+
 }
 

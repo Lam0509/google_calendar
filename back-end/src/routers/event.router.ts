@@ -6,5 +6,6 @@ const EventRouter: Router = express.Router();
 EventRouter.get('/:id', EventController.getEventsOfUser);
 EventRouter.post('/', EventController.addEvent);
 EventRouter.post('/add-user', EventController.addUserIntoEvent);
+EventRouter.delete('/', EventController.deleteEvent);
 
 export default EventRouter;

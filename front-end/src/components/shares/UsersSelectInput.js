@@ -31,9 +31,11 @@ function getStyles(name, personName, theme) {
 
 export default function UsersSelectInput(props) {
 
+    console.log(props.users)
+
     const otherUsers = useSelector(state => state.user)
     const theme = useTheme();
-    const [personName, setPersonName] = React.useState([]);
+    const [personName, setPersonName] = React.useState(props.users && props.users.length !== 0 && props.users[0] !== undefined ? props.users : []);
 
     const handleChange = (event) => {
         const {

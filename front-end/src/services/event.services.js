@@ -12,4 +12,12 @@ export class EventServices {
     static addUserIntoEvent(data) {
         return Axios.post(`events/add-user`, data);
     }
+
+    static deleteEvent(id) {
+        return Axios.delete(`events`, {
+            params: {
+                eventId: id
+            }
+        });
+    }
 }

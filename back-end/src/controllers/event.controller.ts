@@ -38,6 +38,15 @@ class EventController {
         })
     }
 
+    static deleteEvent(req: Request, res: Response) {
+        let eventId = req.query.eventId;
+        EventServices.deleteEvent(eventId)
+            .then(() => {
+                res.status(200).json({message: 'Deleted event successfully!'})
+            }).catch(error => {
+                res.json(error)
+        })
+    }
 }
 
 export default EventController;
